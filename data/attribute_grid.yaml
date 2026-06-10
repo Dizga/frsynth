@@ -1,0 +1,46 @@
+# Attribute grid — the anti-mode-collapse mechanism (spec §3).
+# Every generation request is seeded from one sampled cell of this grid.
+# The category/severity of the cell ARE the ground-truth labels (generation is
+# label-conditioned); the critic pass later verifies the text matches them.
+
+categories:
+  - mécanique
+  - électrique
+  - hydraulique/pneumatique
+  - logiciel/contrôle
+  - sécurité/humain
+  - qualité/process
+
+severities:
+  - mineur
+  - majeur
+  - critique
+
+sectors:
+  - aéronautique
+  - manufacturier
+  - agroalimentaire
+  - énergie
+  - transport
+
+registers:
+  - "note d'équipe (télégraphique, fin de quart)"
+  - "ticket GMAO (champ libre, semi-structuré)"
+  - "rapport formel (phrases complètes)"
+
+lengths:
+  - "court (1-2 phrases)"
+  - "moyen (3-4 phrases)"
+  - "long (5-6 phrases)"
+
+noise_levels:
+  - "propre"
+  - "abréviations métier (ex: moteur -> mot., pression -> press.)"
+  - "abréviations + quelques fautes de frappe réalistes"
+
+# ~25% of samples get a distractor: symptoms that superficially suggest a
+# DIFFERENT category than the true one (e.g. a software fault that first
+# presents as a mechanical noise). These are the hard cases.
+distractor_weights:
+  false: 3
+  true: 1
