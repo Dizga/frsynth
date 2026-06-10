@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 Category = Literal[
     "mécanique",
@@ -18,6 +18,22 @@ class GeneratedReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     report: str
+
+
+class LabeledReport(BaseModel):
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    report: str
+
+    category: Category
+    severity: Severity
+    sector: str
+    register_: str = Field(alias="register")
+    length: str
+    noise: str
+    has_distractor: bool
+    distractor_category: Category | None = None
 
 
 class CriticVerdict(BaseModel):
