@@ -3,7 +3,7 @@ import random
 import yaml
 
 from openai import OpenAI
-from schema import CriticVerdict, GeneratedReport, LabeledReport, output_config_for
+from schema import Category, CriticVerdict, GeneratedReport, LabeledReport, Severity, output_config_for
 
 MODEL = "deepseek/deepseek-v4-flash"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
@@ -86,11 +86,15 @@ class Critic:
         self.model = model
 
     def critique(self, report: LabeledReport) -> CriticVerdict:
+        categories = ", ".join(Category.__args__)
+        severities = ", ".join(Severity.__args__)
         prompt = (
             f"Voici un rapport d'incident industriel :\n\n{report.report}\n\n"
-            "Le rapport est-il plausible pour une panne de catégorie "
-            f"{report.category} et de sévérité {report.severity} ? "
-            "Réponds uniquement en JSON selon le schéma fourni."
+            f"En te basant uniquement sur le contenu du rapport, sans faire d'inférences externes, réponds aux questions suivantes :\n"
+            f"1. Quelle est la catégorie de l'incident parmi les suivantes : {categories} ?\n"
+            f"2. Quelle est la sévérité de l'incident parmi les suivantes : {severities} ?\n"
+            f"3. Le rapport est-il plausible et cohérent pour un incident de cette nature ?\n\n"
+            "Réponds uniquement en JSON selon le schéma fourni, sans explications ni commentaires supplémentaires."
         )
 
         response = client.chat.completions.create(
