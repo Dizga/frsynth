@@ -7,17 +7,28 @@ from schema import Category, CriticVerdict, GeneratedReport, LabeledReport, Seve
 
 MODEL = "deepseek/deepseek-v4-flash"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+GRID_PATH = "data/attribute_grid.yaml"
 
 client = OpenAI(
     base_url=OPENROUTER_BASE_URL,
     api_key=os.getenv("OPENROUTER_API_KEY"),
 )
 
+
+def load_grid(path: str = GRID_PATH) -> dict:
+    with open(path) as f:
+        grid = yaml.safe_load(f)
+    return grid
+
+
+def _rubric_block(title: str, definitions: dict[str, str]) -> str:
+    lines = "\n".join(f"  - {label} : {desc}" for label, desc in definitions.items())
+    return f"{title} :\n{lines}"
+
 class Generator:
-    def __init__(self, model: str = MODEL, grid_path: str = "data/attribute_grid.yaml"):
+    def __init__(self, model: str = MODEL, grid_path: str = GRID_PATH):
         self.model = model
-        with open(grid_path) as f:
-            self.grid = yaml.safe_load(f)
+        self.grid = load_grid(grid_path)
 
     def generate_report(self) -> LabeledReport | None:
 
@@ -41,8 +52,12 @@ class Generator:
 
             distractor_prompt = f"Inclus un détail trompeur qui évoque les symptômes typiques d'une panne de nature {distractor_category}, intégré naturellement au récit, sans jamais nommer cette catégorie ni la signaler comme une note à part. "
 
+        category_def = self.grid["category_definitions"][category]
+        severity_def = self.grid["severity_definitions"][severity]
+
         prompt = (
-            f"Génère un rapport d'incident industriel réaliste, en français, de catégorie {category} et de sévérité {severity}. "
+            f"Génère un rapport d'incident industriel réaliste, en français, de catégorie {category} ({category_def}) "
+            f"et de sévérité {severity} ({severity_def}). "
             f"Le secteur concerné est {sector} avec un registre de type {register}. "
             f"Le rapport doit être de longueur {length} et de nature {noise}. "
             f"{distractor_prompt}"
@@ -82,17 +97,18 @@ class Generator:
     
 
 class Critic:
-    def __init__(self, model: str = MODEL):
+    def __init__(self, model: str = MODEL, grid_path: str = GRID_PATH):
         self.model = model
+        self.grid = load_grid(grid_path)
 
     def critique(self, report: LabeledReport) -> CriticVerdict:
-        categories = ", ".join(Category.__args__)
-        severities = ", ".join(Severity.__args__)
+        category_rubric = _rubric_block("Catégories possibles", self.grid["category_definitions"])
+        severity_rubric = _rubric_block("Sévérités possibles", self.grid["severity_definitions"])
         prompt = (
             f"Voici un rapport d'incident industriel :\n\n{report.report}\n\n"
             f"En te basant uniquement sur le contenu du rapport, sans faire d'inférences externes, réponds aux questions suivantes :\n"
-            f"1. Quelle est la catégorie de l'incident parmi les suivantes : {categories} ?\n"
-            f"2. Quelle est la sévérité de l'incident parmi les suivantes : {severities} ?\n"
+            f"1. Quelle est la catégorie de l'incident ? Choisis parmi :\n{category_rubric}\n"
+            f"2. Quelle est la sévérité de l'incident ? Choisis parmi :\n{severity_rubric}\n"
             f"3. Le rapport est-il plausible et cohérent pour un incident de cette nature ? (true or false)\n"
             f"4. Fournis toute note ou observation pertinente sur les éléments du rapport qui ont guidé tes jugements, en particulier en cas de doute ou d'ambiguïté.\n\n"
             "Réponds uniquement en JSON selon le schéma fourni."

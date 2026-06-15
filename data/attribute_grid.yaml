@@ -11,6 +11,19 @@ severities:
   - majeur
   - critique
 
+category_definitions:
+  mécanique: "pièces mobiles, usure, roulements, courroies, vibrations, casse mécanique"
+  électrique: "alimentation, câblage, court-circuit, moteurs/armoires électriques, défaut capteur"
+  hydraulique/pneumatique: "fluides ou air sous pression, vérins, pompes, fuites, circuits hydrauliques"
+  logiciel/contrôle: "automate/API, IHM, bug logiciel, paramétrage, réseau ou communication"
+  sécurité/humain: "blessure, quasi-accident, EPI, erreur humaine, manquement à une procédure de sécurité"
+  qualité/process: "non-conformité produit, dérive de procédé, défaut qualité, rebut"
+
+severity_definitions:
+  mineur: "aucun arrêt ou arrêt bref, pas de blessure, impact limité et maîtrisé"
+  majeur: "arrêt de production notable, dommage matériel important, ou blessure légère"
+  critique: "danger pour les personnes, blessure grave, arrêt prolongé, ou risque d'accident majeur"
+
 sectors:
   - aéronautique
   - manufacturier
