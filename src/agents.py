@@ -93,12 +93,14 @@ class Critic:
             f"En te basant uniquement sur le contenu du rapport, sans faire d'inférences externes, réponds aux questions suivantes :\n"
             f"1. Quelle est la catégorie de l'incident parmi les suivantes : {categories} ?\n"
             f"2. Quelle est la sévérité de l'incident parmi les suivantes : {severities} ?\n"
-            f"3. Le rapport est-il plausible et cohérent pour un incident de cette nature ?\n\n"
-            "Réponds uniquement en JSON selon le schéma fourni, sans explications ni commentaires supplémentaires."
+            f"3. Le rapport est-il plausible et cohérent pour un incident de cette nature ? (true or false)\n"
+            f"4. Fournis toute note ou observation pertinente sur les éléments du rapport qui ont guidé tes jugements, en particulier en cas de doute ou d'ambiguïté.\n\n"
+            "Réponds uniquement en JSON selon le schéma fourni."
         )
 
         response = client.chat.completions.create(
             model=self.model,
+            temperature=0,
             messages=[
                 {
                     "role": "user",
