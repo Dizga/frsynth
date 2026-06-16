@@ -9,4 +9,4 @@ models/
 outputs/
 .DS_Store
 specs/
-
+data/local/
